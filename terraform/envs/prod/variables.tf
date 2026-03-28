@@ -8,6 +8,21 @@ variable "aws_profile" {
   default = "portfolio-prod"
 }
 
+variable "cluster_endpoint_public_access" {
+  type    = bool
+  default = true
+}
+
+variable "cluster_endpoint_private_access" {
+  type    = bool
+  default = true
+}
+
+variable "cluster_endpoint_public_access_cidrs" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
 variable "project_name" {
   type    = string
   default = "portfolio-platform"
