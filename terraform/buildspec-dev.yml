@@ -10,6 +10,8 @@ phases:
     commands:
       - curl -sSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.13.5/terraform_1.13.5_linux_amd64.zip
       - unzip -o /tmp/terraform.zip -d /usr/local/bin
+      - curl -sSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/v1.30.2/bin/linux/amd64/kubectl
+      - chmod +x /usr/local/bin/kubectl
       - terraform version
 
   build:
@@ -20,3 +22,11 @@ phases:
       - terraform validate
       - terraform plan -var-file=terraform.tfvars -out=tfplan
       - terraform apply -auto-approve tfplan
+      - aws eks update-kubeconfig --region "$AWS_DEFAULT_REGION" --name "dev-eks"
+      - |
+        if ! kubectl get namespace argocd >/dev/null 2>&1; then
+          kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+        else
+          echo "argocd namespace already exists; skipping ArgoCD bootstrap"
+        fi

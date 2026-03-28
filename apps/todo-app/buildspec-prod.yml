@@ -9,8 +9,6 @@ phases:
       nodejs: 20
     commands:
       - echo "Installing application dependencies for prod"
-      - curl -sSL -o /usr/local/bin/kubectl https://dl.k8s.io/release/v1.30.2/bin/linux/amd64/kubectl
-      - chmod +x /usr/local/bin/kubectl
       - cd apps/todo-app
       - npm ci
 
@@ -22,20 +20,11 @@ phases:
       - test -n "$AWS_ACCOUNT_ID"
       - test -n "$IMAGE_REPO_NAME"
       - test -n "$IMAGE_REPO_URI"
-      - test -n "$EKS_CLUSTER_NAME"
       - COMMIT_SHA="${CODEBUILD_RESOLVED_SOURCE_VERSION:-manual}"
       - SHORT_SHA="$(echo "$COMMIT_SHA" | cut -c 1-7)"
       - IMAGE_TAG="prod-${CODEBUILD_BUILD_NUMBER:-0}-${SHORT_SHA}"
       - echo "Logging in to Amazon ECR"
       - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
-      - aws eks update-kubeconfig --region "$AWS_DEFAULT_REGION" --name "$EKS_CLUSTER_NAME"
-      - |
-        if ! kubectl get namespace argocd >/dev/null 2>&1; then
-          kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-        else
-          echo "argocd namespace already exists; skipping ArgoCD bootstrap"
-        fi
 
   build:
     commands:
