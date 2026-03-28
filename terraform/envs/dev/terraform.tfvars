@@ -1,1 +1,2 @@
-region = "ap-south-1"
+region      = "ap-south-1"
+aws_profile = "portfolio-dev"
