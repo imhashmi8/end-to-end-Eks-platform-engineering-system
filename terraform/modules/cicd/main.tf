@@ -21,6 +21,7 @@ resource "aws_iam_role" "codebuild" {
 data "aws_iam_policy_document" "codebuild" {
   statement {
     actions = [
+      "eks:DescribeCluster",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents"
@@ -104,6 +105,11 @@ resource "aws_codebuild_project" "this" {
     environment_variable {
       name  = "IMAGE_REPO_URI"
       value = var.ecr_repository_url
+    }
+
+    environment_variable {
+      name  = "EKS_CLUSTER_NAME"
+      value = var.eks_cluster_name
     }
   }
 

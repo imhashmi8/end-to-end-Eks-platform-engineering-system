@@ -36,6 +36,7 @@ module "cicd" {
 
   name_prefix             = "${var.project_name}-prod"
   artifact_bucket_name    = var.cicd_artifact_bucket_name
+  eks_cluster_name        = "prod-eks"
   github_owner            = var.github_owner
   github_repo             = var.github_repo
   github_branch           = var.github_branch

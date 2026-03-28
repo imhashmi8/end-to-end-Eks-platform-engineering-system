@@ -28,6 +28,10 @@ variable "buildspec_path" {
   default = "buildspec.yml"
 }
 
+variable "eks_cluster_name" {
+  type = string
+}
+
 variable "codebuild_compute_type" {
   type    = string
   default = "BUILD_GENERAL1_SMALL"
