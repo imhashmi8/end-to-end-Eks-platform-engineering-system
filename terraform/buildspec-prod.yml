@@ -20,7 +20,7 @@ phases:
       - terraform init -reconfigure
       - terraform fmt -check
       - terraform validate
-      - terraform plan -var-file=terraform.tfvars -out=tfplan
+      - terraform plan -var-file=terraform.tfvars -var="aws_profile=" -out=tfplan
       - terraform apply -auto-approve tfplan
       - aws eks update-kubeconfig --region "$AWS_DEFAULT_REGION" --name "prod-eks"
       - |
