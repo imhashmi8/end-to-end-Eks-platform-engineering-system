@@ -1,16 +1,9 @@
-variable "region" {
-  type    = string
-  default = "ap-south-1"
+variable "name_prefix" {
+  type = string
 }
 
-variable "aws_profile" {
-  type    = string
-  default = "portfolio-prod"
-}
-
-variable "project_name" {
-  type    = string
-  default = "portfolio-platform"
+variable "artifact_bucket_name" {
+  type = string
 }
 
 variable "github_owner" {
@@ -35,10 +28,24 @@ variable "buildspec_path" {
   default = "buildspec.yml"
 }
 
+variable "codebuild_compute_type" {
+  type    = string
+  default = "BUILD_GENERAL1_SMALL"
+}
+
+variable "codebuild_image" {
+  type    = string
+  default = "aws/codebuild/standard:7.0"
+}
+
 variable "ecr_repository_name" {
   type = string
 }
 
-variable "cicd_artifact_bucket_name" {
+variable "ecr_repository_arn" {
+  type = string
+}
+
+variable "ecr_repository_url" {
   type = string
 }

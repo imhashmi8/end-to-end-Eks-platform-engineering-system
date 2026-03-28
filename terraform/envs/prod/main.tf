@@ -21,3 +21,24 @@ module "eks" {
   max_size       = 5
   desired_size   = 3
 }
+
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name = var.ecr_repository_name
+}
+
+module "cicd" {
+  source = "../../modules/cicd"
+
+  name_prefix             = "${var.project_name}-prod"
+  artifact_bucket_name    = var.cicd_artifact_bucket_name
+  github_owner            = var.github_owner
+  github_repo             = var.github_repo
+  github_branch           = var.github_branch
+  codestar_connection_arn = var.codestar_connection_arn
+  buildspec_path          = var.buildspec_path
+  ecr_repository_name     = module.ecr.repository_name
+  ecr_repository_arn      = module.ecr.repository_arn
+  ecr_repository_url      = module.ecr.repository_url
+}
