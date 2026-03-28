@@ -43,6 +43,7 @@ module "cicd" {
   github_branch           = var.github_branch
   codestar_connection_arn = var.codestar_connection_arn
   buildspec_path          = var.buildspec_path
+  infra_buildspec_path    = var.infra_buildspec_path
   ecr_repository_name     = module.ecr.repository_name
   ecr_repository_arn      = module.ecr.repository_arn
   ecr_repository_url      = module.ecr.repository_url

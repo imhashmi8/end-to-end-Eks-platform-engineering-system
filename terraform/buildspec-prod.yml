@@ -1,0 +1,22 @@
+version: 0.2
+
+env:
+  shell: bash
+  variables:
+    TF_IN_AUTOMATION: "true"
+
+phases:
+  install:
+    commands:
+      - curl -sSL -o /tmp/terraform.zip https://releases.hashicorp.com/terraform/1.13.5/terraform_1.13.5_linux_amd64.zip
+      - unzip -o /tmp/terraform.zip -d /usr/local/bin
+      - terraform version
+
+  build:
+    commands:
+      - cd terraform/envs/prod
+      - terraform init -reconfigure
+      - terraform fmt -check
+      - terraform validate
+      - terraform plan -var-file=terraform.tfvars -out=tfplan
+      - terraform apply -auto-approve tfplan

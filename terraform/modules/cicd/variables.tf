@@ -28,6 +28,11 @@ variable "buildspec_path" {
   default = "buildspec.yml"
 }
 
+variable "infra_buildspec_path" {
+  type    = string
+  default = "terraform/buildspec.yml"
+}
+
 variable "eks_cluster_name" {
   type = string
 }

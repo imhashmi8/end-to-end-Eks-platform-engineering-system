@@ -9,5 +9,6 @@ github_repo                          = "end-to-end-Eks-platform-engineering-syst
 github_branch                        = "main"
 codestar_connection_arn              = "arn:aws:codeconnections:ap-south-1:528956693660:connection/fabaa202-a93a-402f-8daf-d314f134d743"
 buildspec_path                       = "apps/todo-app/buildspec-prod.yml"
+infra_buildspec_path                 = "terraform/buildspec-prod.yml"
 ecr_repository_name                  = "portfolio-app-prod"
 cicd_artifact_bucket_name            = "portfolio-platform-prod-artifacts"

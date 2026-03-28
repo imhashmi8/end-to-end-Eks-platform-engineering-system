@@ -50,6 +50,11 @@ variable "buildspec_path" {
   default = "buildspec.yml"
 }
 
+variable "infra_buildspec_path" {
+  type    = string
+  default = "terraform/buildspec-dev.yml"
+}
+
 variable "ecr_repository_name" {
   type = string
 }
