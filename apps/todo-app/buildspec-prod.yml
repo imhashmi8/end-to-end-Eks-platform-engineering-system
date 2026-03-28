@@ -9,10 +9,12 @@ phases:
       nodejs: 20
     commands:
       - echo "Installing application dependencies for prod"
+      - cd apps/todo-app
       - npm ci
 
   pre_build:
     commands:
+      - cd "$CODEBUILD_SRC_DIR"
       - echo "Running prod pre-build checks"
       - test -n "$AWS_DEFAULT_REGION"
       - test -n "$AWS_ACCOUNT_ID"
@@ -27,7 +29,7 @@ phases:
   build:
     commands:
       - echo "Building prod Docker image"
-      - docker build -t "$IMAGE_REPO_URI:$IMAGE_TAG" -t "$IMAGE_REPO_URI:latest" .
+      - docker build -f apps/todo-app/Dockerfile -t "$IMAGE_REPO_URI:$IMAGE_TAG" -t "$IMAGE_REPO_URI:latest" apps/todo-app
 
   post_build:
     commands:

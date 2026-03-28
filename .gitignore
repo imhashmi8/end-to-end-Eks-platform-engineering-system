@@ -29,5 +29,10 @@ local.tfvars
 .terraformrc
 terraform.rc
 
+# MacOS Finder metadata files
 .DS_Store
 apps/.DS_Store
+
+# node_modules directory
+
+node_modules/
