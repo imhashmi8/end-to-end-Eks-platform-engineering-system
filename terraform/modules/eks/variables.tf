@@ -1,8 +1,27 @@
-variable "cluster_name" {}
-variable "vpc_id" {}
-variable "private_subnets" { type = list(string) }
+variable "cluster_name" {
+  type = string
+}
 
-variable "instance_types" { type = list(string) }
-variable "min_size" {}
-variable "max_size" {}
-variable "desired_size" {}
+variable "vpc_id" {
+  type = string
+}
+
+variable "private_subnets" {
+  type = list(string)
+}
+
+variable "instance_types" {
+  type = list(string)
+}
+
+variable "min_size" {
+  type = number
+}
+
+variable "max_size" {
+  type = number
+}
+
+variable "desired_size" {
+  type = number
+}
