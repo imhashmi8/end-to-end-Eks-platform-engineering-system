@@ -1,0 +1,31 @@
+replicaCount: 1
+
+image:
+  repository: 528956693660.dkr.ecr.ap-south-1.amazonaws.com/portfolio-app-prod
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3000
+
+env:
+  PORT: 3000
+  NODE_ENV: production
+
+secretEnv:
+  MONGO_URI:
+    secretName: mongo-secret
+    secretKey: MONGO_URI
+
+ingress:
+  enabled: false
+
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "250m"
+  limits:
+    memory: "256Mi"
+    cpu: "500m"
+
