@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: 528956693660.dkr.ecr.ap-south-1.amazonaws.com/portfolio-app-prod
-  tag: prod-16-4b2ac99
+  tag: prod-17-15c61fb
   pullPolicy: IfNotPresent
 
 service:
