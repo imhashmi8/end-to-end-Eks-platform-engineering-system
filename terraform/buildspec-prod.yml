@@ -76,7 +76,3 @@ phases:
           --set serviceAccount.name=aws-load-balancer-controller \
           --set region="$AWS_DEFAULT_REGION" \
           --set vpcId="$VPC_ID"
-      - echo "Exposing ArgoCD through a public load balancer"
-      - kubectl apply -f ../../manifests/argocd-server-public-service.yaml
-      - kubectl get svc argocd-server-public -n argocd
-      - echo "Infra bootstrap for prod completed"
