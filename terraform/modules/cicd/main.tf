@@ -152,7 +152,9 @@ data "aws_iam_policy_document" "infra_codebuild" {
       "kms:*",
       "logs:*",
       "s3:*",
-      "sts:GetCallerIdentity"
+      "sts:GetCallerIdentity",
+      "cloudformation:*"
+
     ]
     resources = ["*"]
   }
