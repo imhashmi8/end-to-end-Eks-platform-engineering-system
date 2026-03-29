@@ -25,7 +25,7 @@ data "aws_iam_policy_document" "app_codebuild" {
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "secretmanager:GetSecretValue",
+      "secretsmanager:GetSecretValue",
       "kms:Decrypt"
     ]
     resources = ["*"]
