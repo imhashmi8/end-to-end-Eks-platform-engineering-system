@@ -41,13 +41,16 @@ phases:
       - echo "Pushing dev Docker images to ECR"
       - docker push "$IMAGE_REPO_URI:$IMAGE_TAG"
       - docker push "$IMAGE_REPO_URI:dev-latest"
-      - echo "Updating GitOps values for dev"
+      - REPO_PATH="${CODEBUILD_SOURCE_REPO_URL#https://github.com/}"
+      - GITOPS_REPO_DIR=/tmp/gitops-repo-dev
+      - echo "Cloning repository to update GitOps values for dev"
+      - rm -rf "$GITOPS_REPO_DIR"
+      - git clone --depth 1 --branch "$TARGET_BRANCH" "https://x-access-token:${GITOPS_GITHUB_TOKEN}@github.com/${REPO_PATH}" "$GITOPS_REPO_DIR"
+      - cd "$GITOPS_REPO_DIR"
       - sed -i.bak "s|^\([[:space:]]*tag:[[:space:]]*\).*|\1${IMAGE_TAG}|" gitops/dev/values.yaml
       - rm -f gitops/dev/values.yaml.bak
       - git config user.name "codebuild-dev"
       - git config user.email "codebuild-dev@local"
-      - REPO_PATH="${CODEBUILD_SOURCE_REPO_URL#https://github.com/}"
-      - git remote set-url origin "https://x-access-token:${GITOPS_GITHUB_TOKEN}@github.com/${REPO_PATH}"
       - git add gitops/dev/values.yaml
       - |
         if ! git diff --cached --quiet; then
@@ -56,6 +59,7 @@ phases:
         else
           echo "No GitOps changes to commit"
         fi
+      - cd "$CODEBUILD_SRC_DIR"
       - printf '[{"name":"todo-app","imageUri":"%s"}]' "$IMAGE_REPO_URI:$IMAGE_TAG" > imagedefinitions.json
       - printf '{"environment":"dev","image":"%s","tag":"%s","commit":"%s"}\n' "$IMAGE_REPO_URI" "$IMAGE_TAG" "$COMMIT_SHA" > imageDetail.json
 
