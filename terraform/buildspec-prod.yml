@@ -48,6 +48,10 @@ phases:
         else
           echo "argocd namespace already exists; skipping ArgoCD bootstrap"
         fi
+      - echo "Waiting for ArgoCD Application CRD"
+      - kubectl wait --for=condition=Established crd/applications.argoproj.io --timeout=5m
+      - echo "Applying ArgoCD application for prod"
+      - kubectl apply -f ../../../gitops/prod/application.yaml
       - echo "Preparing AWS Load Balancer Controller IAM policy"
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - POLICY_NAME=AWSLoadBalancerControllerIAMPolicy
