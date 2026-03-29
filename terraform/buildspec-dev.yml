@@ -50,8 +50,13 @@ phases:
         fi
       - echo "Waiting for ArgoCD Application CRD"
       - kubectl wait --for=condition=Established crd/applications.argoproj.io --timeout=5m
-      - echo "Applying ArgoCD application for dev"
-      - kubectl apply -f ../../../gitops/dev/application.yaml
+      - |
+        if ! kubectl get application todo-app-dev -n argocd >/dev/null 2>&1; then
+          echo "Creating ArgoCD application for dev"
+          kubectl apply -f ../../../gitops/dev/application.yaml
+        else
+          echo "ArgoCD application todo-app-dev already exists; skipping creation"
+        fi
       - echo "Preparing AWS Load Balancer Controller IAM policy"
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - POLICY_NAME=AWSLoadBalancerControllerIAMPolicy
