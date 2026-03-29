@@ -235,7 +235,64 @@ Before running this project, you should have:
 - a MongoDB Atlas cluster and connection string
 - an AWS CodeStar Connection linked to GitHub
 
-### 1. Configure Terraform Environment Variables
+### 1. Bootstrap the Terraform Remote State Backend
+
+Before running `terraform init`, create the S3 bucket used by the backend.
+
+This repository uses:
+
+- bucket: `qamar-terraform-state-ap-south-1`
+- region: `ap-south-1`
+- state keys:
+  - `eks/dev/terraform.tfstate`
+  - `eks/prod/terraform.tfstate`
+- locking: S3 native lockfile via `use_lockfile = true`
+
+Create the bucket:
+
+```bash
+aws s3api create-bucket \
+  --bucket qamar-terraform-state-ap-south-1 \
+  --region ap-south-1 \
+  --create-bucket-configuration LocationConstraint=ap-south-1
+```
+
+Enable versioning:
+
+```bash
+aws s3api put-bucket-versioning \
+  --bucket qamar-terraform-state-ap-south-1 \
+  --versioning-configuration Status=Enabled
+```
+
+Enable default encryption:
+
+```bash
+aws s3api put-bucket-encryption \
+  --bucket qamar-terraform-state-ap-south-1 \
+  --server-side-encryption-configuration '{
+    "Rules": [
+      {
+        "ApplyServerSideEncryptionByDefault": {
+          "SSEAlgorithm": "AES256"
+        }
+      }
+    ]
+  }'
+```
+
+Block public access:
+
+```bash
+aws s3api put-public-access-block \
+  --bucket qamar-terraform-state-ap-south-1 \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+```
+
+Note: because the backend uses `use_lockfile = true`, Terraform will manage the lock file in S3 automatically. You do not need to create a DynamoDB lock table for this repository.
+
+### 2. Configure Terraform Environment Variables
 
 Update the environment-specific tfvars files:
 
@@ -252,7 +309,7 @@ Important values include:
 - `cicd_artifact_bucket_name`
 - AWS profile and region values
 
-### 2. Create the GitHub Token Secret in AWS Secrets Manager
+### 3. Create the GitHub Token Secret in AWS Secrets Manager
 
 The app buildspecs read the GitHub token from:
 
@@ -270,7 +327,16 @@ aws secretsmanager create-secret \
 
 This token is used by CodeBuild to push GitOps value updates back to the repository.
 
-### 3. Create the MongoDB Kubernetes Secret
+If the secret already exists, update it with:
+
+```bash
+aws secretsmanager put-secret-value \
+  --region ap-south-1 \
+  --secret-id github/cicd \
+  --secret-string '{"token":"YOUR_GITHUB_PAT"}'
+```
+
+### 4. Create the MongoDB Kubernetes Secret
 
 The application expects a Kubernetes secret named `mongo-secret` with key `MONGO_URI`.
 
@@ -292,7 +358,26 @@ kubectl create secret generic mongo-secret \
   --from-literal=MONGO_URI='your-mongodb-atlas-connection-string'
 ```
 
-### 4. Provision Infrastructure
+### 5. Optional Manual Checks Before First Deploy
+
+These are easy to miss during the first setup:
+
+- make sure the GitHub fine-grained PAT used in `github/cicd` has repository write access
+- make sure the CodeStar Connection is in `Available` status
+- make sure the `main` branch exists in the target repository
+- make sure the MongoDB Atlas network access rules allow traffic from your application
+- make sure the Kubernetes secret is created in the same namespace Argo CD will deploy into
+
+Useful checks:
+
+```bash
+aws secretsmanager describe-secret --region ap-south-1 --secret-id github/cicd
+aws codeconnections get-connection --region ap-south-1 --connection-arn YOUR_CONNECTION_ARN
+kubectl get secret mongo-secret -n prod
+kubectl get secret mongo-secret -n dev
+```
+
+### 6. Provision Infrastructure
 
 You can provision locally:
 
@@ -305,7 +390,7 @@ terraform apply -var-file=terraform.tfvars
 
 Or let the infra pipeline manage changes automatically when code under `terraform/` changes.
 
-### 5. Let the App Pipeline Deliver New Versions
+### 7. Let the App Pipeline Deliver New Versions
 
 Once the infrastructure is in place:
 
