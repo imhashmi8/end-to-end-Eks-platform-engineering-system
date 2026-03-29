@@ -365,8 +365,7 @@ resource "aws_codepipeline" "app" {
         file_paths {
           includes = [
             "apps/todo-app/**",
-            "helm/todo-app/**",
-            "gitops/**"
+            "helm/todo-app/**"
           ]
 
           excludes = [
