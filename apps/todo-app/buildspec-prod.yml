@@ -2,6 +2,8 @@ version: 0.2
 
 env:
   shell: bash
+  secrets-manager:
+    GITOPS_GITHUB_TOKEN: github/cicd:token
 
 phases:
   install:
@@ -20,9 +22,12 @@ phases:
       - test -n "$AWS_ACCOUNT_ID"
       - test -n "$IMAGE_REPO_NAME"
       - test -n "$IMAGE_REPO_URI"
+      - test -n "$GITOPS_GITHUB_TOKEN"
       - COMMIT_SHA="${CODEBUILD_RESOLVED_SOURCE_VERSION:-manual}"
       - SHORT_SHA="$(echo "$COMMIT_SHA" | cut -c 1-7)"
       - IMAGE_TAG="prod-${CODEBUILD_BUILD_NUMBER:-0}-${SHORT_SHA}"
+      - TARGET_BRANCH="${CODEBUILD_WEBHOOK_HEAD_REF#refs/heads/}"
+      - if [ -z "$TARGET_BRANCH" ]; then TARGET_BRANCH=main; fi
       - echo "Logging in to Amazon ECR"
       - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 
@@ -36,6 +41,21 @@ phases:
       - echo "Pushing prod Docker images to ECR"
       - docker push "$IMAGE_REPO_URI:$IMAGE_TAG"
       - docker push "$IMAGE_REPO_URI:latest"
+      - echo "Updating GitOps values for prod"
+      - sed -i.bak "s|^\([[:space:]]*tag:[[:space:]]*\).*|\1${IMAGE_TAG}|" gitops/prod/values.yaml
+      - rm -f gitops/prod/values.yaml.bak
+      - git config user.name "codebuild-prod"
+      - git config user.email "codebuild-prod@local"
+      - REPO_PATH="${CODEBUILD_SOURCE_REPO_URL#https://github.com/}"
+      - git remote set-url origin "https://x-access-token:${GITOPS_GITHUB_TOKEN}@github.com/${REPO_PATH}"
+      - git add gitops/prod/values.yaml
+      - |
+        if ! git diff --cached --quiet; then
+          git commit -m "Update prod image tag to ${IMAGE_TAG}"
+          git push origin "HEAD:${TARGET_BRANCH}"
+        else
+          echo "No GitOps changes to commit"
+        fi
       - printf '[{"name":"todo-app","imageUri":"%s"}]' "$IMAGE_REPO_URI:$IMAGE_TAG" > imagedefinitions.json
       - printf '{"environment":"prod","image":"%s","tag":"%s","commit":"%s"}\n' "$IMAGE_REPO_URI" "$IMAGE_TAG" "$COMMIT_SHA" > imageDetail.json
 
