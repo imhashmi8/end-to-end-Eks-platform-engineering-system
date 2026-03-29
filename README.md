@@ -62,6 +62,36 @@ Application runtime flow:
 User -> Load Balancer / Kubernetes Service -> Todo App -> MongoDB Atlas
 ```
 
+Detailed platform flow:
+
+```text
+                GitHub Repo
+                     |
+     ---------------------------------
+     |                               |
+ App Pipeline                 Infra Pipeline
+     |                               |
+ CodeBuild (Docker)         CodeBuild (Terraform)
+     |                               |
+     v                               v
+   Amazon ECR               AWS Infrastructure
+     |                      (VPC, EKS, IAM, etc.)
+     |                               |
+     -----------+---------------------
+                 |
+           GitOps Repo Update
+                 |
+              Argo CD
+                 |
+              Amazon EKS
+                 |
+        Kubernetes (Helm)
+                 |
+           Todo App Pods
+                 |
+           MongoDB Atlas
+```
+
 ## Repository Structure
 
 ```text
