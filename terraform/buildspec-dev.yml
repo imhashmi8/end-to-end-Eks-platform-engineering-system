@@ -71,12 +71,41 @@ phases:
       - |
         helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
           -n kube-system \
+          --wait \
+          --timeout 10m \
           --set clusterName="dev-eks" \
+          --set enableServiceMutatorWebhook=false \
           --set serviceAccount.create=false \
           --set serviceAccount.name=aws-load-balancer-controller \
           --set region="$AWS_DEFAULT_REGION" \
           --set vpcId="$VPC_ID"
+      - echo "Waiting for AWS Load Balancer Controller rollout"
+      - kubectl rollout status deployment/aws-load-balancer-controller -n kube-system --timeout=5m
+      - |
+        for i in $(seq 1 12); do
+          if kubectl get mutatingwebhookconfiguration aws-load-balancer-webhook -o jsonpath='{.webhooks[0].clientConfig.caBundle}' 2>/dev/null | grep -q .; then
+            echo "AWS Load Balancer Controller webhook CA bundle is present"
+            break
+          fi
+          if [ "$i" -eq 12 ]; then
+            echo "AWS Load Balancer Controller webhook CA bundle did not become ready in time"
+            exit 1
+          fi
+          echo "Waiting for webhook CA bundle ($i/12)"
+          sleep 10
+        done
       - echo "Exposing ArgoCD through a public load balancer"
-      - kubectl apply -f ../../manifests/argocd-server-public-service.yaml
-      - kubectl get svc argocd-server-public -n argocd
+      - |
+        for i in $(seq 1 6); do
+          if kubectl apply -f ../../manifests/argocd-server-public-service.yaml; then
+            kubectl get svc argocd-server-public -n argocd
+            break
+          fi
+          if [ "$i" -eq 6 ]; then
+            echo "Failed to create the public ArgoCD service after retries"
+            exit 1
+          fi
+          echo "Retrying ArgoCD public service creation ($i/6)"
+          sleep 15
+        done
       - echo "Infra bootstrap for dev completed"
