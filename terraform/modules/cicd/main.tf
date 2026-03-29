@@ -153,7 +153,8 @@ data "aws_iam_policy_document" "infra_codebuild" {
       "logs:*",
       "s3:*",
       "sts:GetCallerIdentity",
-      "cloudformation:*"
+      "cloudformation:*",
+      "secretmanager:*"
 
     ]
     resources = ["*"]
