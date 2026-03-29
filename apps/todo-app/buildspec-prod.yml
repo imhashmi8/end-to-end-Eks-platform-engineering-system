@@ -23,11 +23,14 @@ phases:
       - test -n "$IMAGE_REPO_NAME"
       - test -n "$IMAGE_REPO_URI"
       - test -n "$GITOPS_GITHUB_TOKEN"
+      - test -n "$GITHUB_OWNER"
+      - test -n "$GITHUB_REPO"
+      - test -n "$GITHUB_BRANCH"
       - COMMIT_SHA="${CODEBUILD_RESOLVED_SOURCE_VERSION:-manual}"
       - SHORT_SHA="$(echo "$COMMIT_SHA" | cut -c 1-7)"
       - IMAGE_TAG="prod-${CODEBUILD_BUILD_NUMBER:-0}-${SHORT_SHA}"
       - TARGET_BRANCH="${CODEBUILD_WEBHOOK_HEAD_REF#refs/heads/}"
-      - if [ -z "$TARGET_BRANCH" ]; then TARGET_BRANCH=main; fi
+      - if [ -z "$TARGET_BRANCH" ]; then TARGET_BRANCH="$GITHUB_BRANCH"; fi
       - echo "Logging in to Amazon ECR"
       - aws ecr get-login-password --region "$AWS_DEFAULT_REGION" | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 
@@ -41,7 +44,7 @@ phases:
       - echo "Pushing prod Docker images to ECR"
       - docker push "$IMAGE_REPO_URI:$IMAGE_TAG"
       - docker push "$IMAGE_REPO_URI:latest"
-      - REPO_PATH="${CODEBUILD_SOURCE_REPO_URL#https://github.com/}"
+      - REPO_PATH="${GITHUB_OWNER}/${GITHUB_REPO}"
       - GITOPS_REPO_DIR=/tmp/gitops-repo-prod
       - echo "Cloning repository to update GitOps values for prod"
       - rm -rf "$GITOPS_REPO_DIR"

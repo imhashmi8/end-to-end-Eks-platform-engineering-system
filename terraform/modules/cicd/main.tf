@@ -113,6 +113,21 @@ resource "aws_codebuild_project" "app" {
       name  = "EKS_CLUSTER_NAME"
       value = var.eks_cluster_name
     }
+
+    environment_variable {
+      name  = "GITHUB_OWNER"
+      value = var.github_owner
+    }
+
+    environment_variable {
+      name  = "GITHUB_REPO"
+      value = var.github_repo
+    }
+
+    environment_variable {
+      name  = "GITHUB_BRANCH"
+      value = var.github_branch
+    }
   }
 
   source {
