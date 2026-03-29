@@ -24,7 +24,8 @@ data "aws_iam_policy_document" "app_codebuild" {
       "eks:DescribeCluster",
       "logs:CreateLogGroup",
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
+      "secretmanager:GetSecretValue"
     ]
     resources = ["*"]
   }
