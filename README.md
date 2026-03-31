@@ -1,6 +1,6 @@
 # End-to-End EKS Platform Engineering System
 
-This repository is my platform engineering portfolio project built on AWS. It demonstrates how I provision infrastructure with Terraform, package an application with Helm, run CI with AWS CodePipeline and CodeBuild, publish images to Amazon ECR, and deliver workloads to Amazon EKS through Argo CD and GitOps.
+This repository is my platform engineering todo-app project built on AWS. It demonstrates how I provision infrastructure with Terraform, package an application with Helm, run CI with AWS CodePipeline and CodeBuild, publish images to Amazon ECR, and deliver workloads to Amazon EKS through Argo CD and GitOps.
 
 The project is designed to show an end-to-end operating model rather than an isolated demo:
 
@@ -444,7 +444,7 @@ These handle:
 - `gitops/dev/values.yaml`
 - `gitops/prod/values.yaml`
 
-## Why This Is a Good Platform Engineering Portfolio Project
+## Why This Is a Good Platform Engineering todo-app Project
 
 This repository demonstrates practical skills across several layers:
 
@@ -463,7 +463,7 @@ This repository demonstrates practical skills across several layers:
 - MongoDB credentials are not stored in Git.
 - The GitHub token used for GitOps updates is stored in AWS Secrets Manager.
 - Argo CD is bootstrapped automatically, but access hardening should be reviewed for production use.
-- The EKS API endpoint is currently configured for broad public access in the tfvars for ease of portfolio testing. In a production-grade setup, this should be restricted to trusted CIDRs.
+- The EKS API endpoint is currently configured for broad public access in the tfvars for ease of todo-app testing. In a production-grade setup, this should be restricted to trusted CIDRs.
 
 ## Useful Commands
 
@@ -511,4 +511,4 @@ kubectl -n argocd get secret argocd-initial-admin-secret \
 
 ## Summary
 
-This project shows how I approach platform engineering as a connected system: infrastructure, pipelines, container delivery, Kubernetes packaging, GitOps reconciliation, and operational setup all working together. It is intentionally built as a portfolio project that demonstrates not only happy-path deployment, but also the kind of practical debugging and workflow refinement that real platform work requires.
+This project shows how I approach platform engineering as a connected system: infrastructure, pipelines, container delivery, Kubernetes packaging, GitOps reconciliation, and operational setup all working together. It is intentionally built as a todo-app project that demonstrates not only happy-path deployment, but also the kind of practical debugging and workflow refinement that real platform work requires.

@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: 528956693660.dkr.ecr.ap-south-1.amazonaws.com/portfolio-app-dev
+  repository: 528956693660.dkr.ecr.ap-south-1.amazonaws.com/todo-app-app-dev
   pullPolicy: IfNotPresent
   tag: latest
 

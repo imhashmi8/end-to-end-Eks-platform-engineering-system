@@ -276,7 +276,7 @@ This is valuable because it shows practical understanding of how CI and CD are s
 
 ## Missing or Incomplete Steps
 
-The current setup is functional as a learning and portfolio project, but a few pieces are still missing or can be improved.
+The current setup is functional as a learning and todo-app project, but a few pieces are still missing or can be improved.
 
 Current gaps:
 
