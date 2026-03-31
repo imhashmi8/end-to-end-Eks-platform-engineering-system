@@ -5,7 +5,7 @@ variable "region" {
 
 variable "aws_profile" {
   type    = string
-  default = "portfolio-dev"
+  default = "todo-app-dev"
 }
 
 variable "cluster_endpoint_public_access" {
@@ -25,7 +25,7 @@ variable "cluster_endpoint_public_access_cidrs" {
 
 variable "project_name" {
   type    = string
-  default = "portfolio-platform"
+  default = "todo-app-platform"
 }
 
 variable "github_owner" {
