@@ -36,6 +36,46 @@ phases:
       - terraform init -reconfigure
       - terraform fmt -check
       - terraform validate
+      - echo "Importing existing EKS access entries into Terraform state when present"
+      - |
+        import_eks_cluster_admin_access() {
+          local principal_arn="$1"
+          local policy_arn="arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          local entry_key
+          local entry_address
+          local association_address
+          local policy_association_count
+
+          if [ -z "$principal_arn" ]; then
+            return 0
+          fi
+
+          entry_key="$(printf '%s' "$principal_arn" | sed 's/:/_/g; s#/#_#g')"
+          entry_address="module.eks.module.eks.aws_eks_access_entry.this[\"${entry_key}_cluster_admin\"]"
+          association_address="module.eks.module.eks.aws_eks_access_policy_association.this[\"${entry_key}_cluster_admin\"]"
+
+          if aws eks describe-access-entry --region "$AWS_DEFAULT_REGION" --cluster-name "$EKS_CLUSTER_NAME" --principal-arn "$principal_arn" >/dev/null 2>&1; then
+            echo "EKS access entry already exists for $principal_arn"
+
+            if ! terraform state show "$entry_address" >/dev/null 2>&1; then
+              terraform import -var-file=terraform.tfvars -var="aws_profile=" "$entry_address" "${EKS_CLUSTER_NAME}:${principal_arn}"
+            else
+              echo "Terraform state already contains $entry_address"
+            fi
+
+            policy_association_count="$(aws eks list-associated-access-policies --region "$AWS_DEFAULT_REGION" --cluster-name "$EKS_CLUSTER_NAME" --principal-arn "$principal_arn" --query "length(associatedAccessPolicies[?policyArn=='${policy_arn}'])" --output text)"
+            if [ "$policy_association_count" = "1" ]; then
+              if ! terraform state show "$association_address" >/dev/null 2>&1; then
+                terraform import -var-file=terraform.tfvars -var="aws_profile=" "$association_address" "${EKS_CLUSTER_NAME}#${principal_arn}#${policy_arn}"
+              else
+                echo "Terraform state already contains $association_address"
+              fi
+            fi
+          fi
+        }
+
+        import_eks_cluster_admin_access "$INFRA_CODEBUILD_ROLE_ARN"
+        import_eks_cluster_admin_access "$APP_CODEBUILD_ROLE_ARN"
       - terraform plan -var-file=terraform.tfvars -var="aws_profile=" -out=tfplan
       - terraform apply -auto-approve tfplan
       - echo "Updating kubeconfig for $EKS_CLUSTER_NAME"
