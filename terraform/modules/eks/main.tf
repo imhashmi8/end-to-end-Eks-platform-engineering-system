@@ -13,6 +13,22 @@ module "eks" {
 
   enable_irsa = true
 
+  access_entries = {
+    for principal_arn in var.cluster_admin_principal_arns :
+    replace(replace(principal_arn, ":", "_"), "/", "_") => {
+      principal_arn = principal_arn
+
+      policy_associations = {
+        cluster_admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
+
   eks_managed_node_groups = {
     default = {
       instance_types = var.instance_types

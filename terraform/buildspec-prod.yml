@@ -38,8 +38,10 @@ phases:
       - terraform validate
       - terraform plan -var-file=terraform.tfvars -var="aws_profile=" -out=tfplan
       - terraform apply -auto-approve tfplan
-      - echo "Updating kubeconfig for prod-eks"
-      - aws eks update-kubeconfig --region "$AWS_DEFAULT_REGION" --name "prod-eks"
+      - echo "Updating kubeconfig for $EKS_CLUSTER_NAME"
+      - aws eks update-kubeconfig --region "$AWS_DEFAULT_REGION" --name "$EKS_CLUSTER_NAME"
+      - echo "Verifying EKS admin access for bootstrap"
+      - kubectl auth can-i create namespaces --all-namespaces
       - |
         if ! kubectl get namespace argocd >/dev/null 2>&1; then
           echo "Installing ArgoCD"
@@ -70,17 +72,17 @@ phases:
           echo "AWS Load Balancer Controller IAM policy already exists; skipping policy creation"
         fi
       - echo "Associating IAM OIDC provider"
-      - eksctl utils associate-iam-oidc-provider --cluster "prod-eks" --region "$AWS_DEFAULT_REGION" --approve
+      - eksctl utils associate-iam-oidc-provider --cluster "$EKS_CLUSTER_NAME" --region "$AWS_DEFAULT_REGION" --approve
       - echo "Creating or updating IRSA service account"
-      - eksctl create iamserviceaccount --cluster "prod-eks" --region "$AWS_DEFAULT_REGION" --namespace kube-system --name aws-load-balancer-controller --role-name "prod-eks-aws-load-balancer-controller" --attach-policy-arn "$POLICY_ARN" --override-existing-serviceaccounts --approve
+      - eksctl create iamserviceaccount --cluster "$EKS_CLUSTER_NAME" --region "$AWS_DEFAULT_REGION" --namespace kube-system --name aws-load-balancer-controller --role-name "prod-eks-aws-load-balancer-controller" --attach-policy-arn "$POLICY_ARN" --override-existing-serviceaccounts --approve
       - echo "Installing AWS Load Balancer Controller"
       - helm repo add eks https://aws.github.io/eks-charts
       - helm repo update
-      - VPC_ID=$(aws eks describe-cluster --name "prod-eks" --region "$AWS_DEFAULT_REGION" --query 'cluster.resourcesVpcConfig.vpcId' --output text)
+      - VPC_ID=$(aws eks describe-cluster --name "$EKS_CLUSTER_NAME" --region "$AWS_DEFAULT_REGION" --query 'cluster.resourcesVpcConfig.vpcId' --output text)
       - |
         helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
           -n kube-system \
-          --set clusterName="prod-eks" \
+          --set clusterName="$EKS_CLUSTER_NAME" \
           --set serviceAccount.create=false \
           --set serviceAccount.name=aws-load-balancer-controller \
           --set region="$AWS_DEFAULT_REGION" \
