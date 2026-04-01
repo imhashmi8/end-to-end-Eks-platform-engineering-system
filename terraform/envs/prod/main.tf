@@ -16,12 +16,8 @@ module "eks" {
   cluster_endpoint_public_access       = var.cluster_endpoint_public_access
   cluster_endpoint_private_access      = var.cluster_endpoint_private_access
   cluster_endpoint_public_access_cidrs = var.cluster_endpoint_public_access_cidrs
-  cluster_admin_principal_arns = [
-    module.cicd.infra_codebuild_role_arn,
-    module.cicd.app_codebuild_role_arn,
-  ]
-  vpc_id          = module.vpc.vpc_id
-  private_subnets = module.vpc.private_subnets
+  vpc_id                               = module.vpc.vpc_id
+  private_subnets                      = module.vpc.private_subnets
 
   instance_types = ["t3.large"]
   min_size       = 2

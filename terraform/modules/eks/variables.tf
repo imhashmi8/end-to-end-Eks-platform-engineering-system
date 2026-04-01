@@ -40,8 +40,3 @@ variable "max_size" {
 variable "desired_size" {
   type = number
 }
-
-variable "cluster_admin_principal_arns" {
-  type    = list(string)
-  default = []
-}

@@ -209,16 +209,6 @@ resource "aws_codebuild_project" "infra" {
       name  = "EKS_CLUSTER_NAME"
       value = var.eks_cluster_name
     }
-
-    environment_variable {
-      name  = "INFRA_CODEBUILD_ROLE_ARN"
-      value = aws_iam_role.infra_codebuild.arn
-    }
-
-    environment_variable {
-      name  = "APP_CODEBUILD_ROLE_ARN"
-      value = aws_iam_role.app_codebuild.arn
-    }
   }
 
   source {
